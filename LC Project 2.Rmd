@@ -1,0 +1,130 @@
+---
+title: "Caturan Project 2C"
+output: html_notebook
+---
+
+Scientific question: How does an active cycle of breathing techniques and aerobic exercise training affect the physical fitness, as measured by muscle endurance and speed, of young children between the ages of 5-13 with cystic fibrosis?
+
+Scientific background: Cystic fibrosis is a multisystem disease that primarily affects the respiratory system. CF occurs due to a mutation that makes the cystic fibrosis transmembrane regulator (CTFR) nonfunctional. The CTFR is responsible for secreting saline into the airway epithelium, making it possible for mucus to be expelled normally; for instance, mucus is typically moved by cilia up the airways, which causes you to cough it out or travel down into your stomach. With a mutated CTFR, no saline is added to the mucus of the airway, making the mucus thick and viscous. As a result, the cilia of the mucociliary escalator is unable to move mucus out of the airway. As a result, the thick mucus ends up becoming a breeding ground for germs and pathogens, which makes CF patients more prone to respiratory infection. While this disorder has no cure, a variety of treatments have been proven to help alleviate the symptoms of patients who suffer with CF. For instance, exercise has been proven to increase forced expiration and mucus clearance, decrease the feeling of shortness of breath, and support a feeling of wellness (Bulent). Although, a common obstacle faced by patients suffering from CF is that because of their illness, they have little to no exercise tolerance and an overall feeling of breathlessness, so it is difficult to get CF patients into a regular exercise routine without addressing the pulmonary symptoms they are faced with. In order to address those symptoms, it must be taken into consideration whether it would be beneficial to provide CF patients with some kind of pulmonary rehabilitation alongside their medical treatments, and whether breathing techniques will allow these patients to exercise comfortably and therefore improve their overall quality of life. Ultimately, what will be investigated here are the effects of aerobic exercise training in combination with an active cycle of breathing techniques, and whether the combination of these two techniques will improve the muscle endurance and strength of cystic fibrosis patients ranging from ages 5 to 13 years old.
+
+Scientific hypothesis: If clinically stable pediatric cystic fibrosis patients undergo an active cycle of breathing techniques in addition to aerobic exercise training, then their thoracic mobility and physical fitness parameters such as muscle endurance and speed will increase.
+
+In order to address the above scientific hypothesis, we will use the paired sample t-test to determine whether the relationship between an active cycle of breathing techniques/aerobic exercise training, muscle endurance, and speed are statistically significant. In order to evaluate for muscle endurance, the sit-ups test data will be used, and to assess for speed, the shuttle run data will be used. Histograms will be used to visualize any trends between the program and each physical fitness test. Finally, a Deep Neural Network will be used to determine whether vital capacity (VC) and FEV1 are able to be used to predict shuttle run times in pediatric cystic fibrosis patients.
+
+The paired sample t-test has been chosen to generate p-values of this study because we are interested in comparing the differences between the same two variables for the same group of subjects. More specifically, all 20 patients were instructed to perform the sit-up and shuttle run tests before and after their breathing and aerobic exercise training programs. 
+
+
+Below are the packages used in this data analysis and what each package does:
+1. neuralnet:
+
+The following packages will need to be installed and loaded for this data analysis:
+```{r}
+library(neuralnet)
+```
+
+
+Bulent's article provided data for before/after training sit-up test results, before/after training shuttle run results, ages, weights, heights, vital capacities, and forced expiratory volumes. Although, the article only provided means and standard deviations. So, in order to proceed with this data analysis, 20 data points for each of the mentioned characteristics were randomly generated in R. An example of the code used to randomly generate the data is included below. The exact same code was done for each of the sit-up/shuttle run tests, as well as the general characteristics of the patients. 
+```{r}
+#Generating a vector of 20 data points given the mean and standard deviation of 'before training' sit-up test
+situps_beforetraining <- rnorm(20, mean = 25.87, sd = 7.5)
+situps_beforetraining
+```
+
+At this point, data points have been collected based on the means and standard deviations from the Bulent article. An Excel sheet has been formulated using these data points, and this excel sheet will be read into this Notebook to be used in the visualizing of both the sit-up test (measuring muscle endurance) and the shuttle run test (measuring speed).
+```{r}
+#Reading in the my_data excel sheet
+my_data <- read.csv("BIMM 143 Project 2.csv")
+my_data
+```
+
+```{r}
+#Comparing the histograms of before and after training for sit-up test
+hist(my_data$situps_beforetraining, xlim = c(10, 40), ylim = c(0,8), main = "Sit-up test BEFORE training", xlab = "# of sit-ups")
+hist(my_data$situps_aftertraining, xlim = c(10, 40), ylim = c(0,8), main = "Sit-up test AFTER training", xlab = "# of sit-ups")
+```
+Based on the histograms made for the sit-up tests before and after training, it is evident that the number of sit-ups increased after the training program. This will be further investigated using a paired sample t-test below.
+
+```{r}
+#Comparing the histograms of before and after training for shuttle run test
+hist(my_data$shuttlerun_beforetraining, xlim = c(2, 8), ylim = c(0,5), main = "Shuttle run test BEFORE training", xlab = "Shuttle run time (sec)")
+hist(my_data$shuttlerun_aftertraining, xlim = c(2, 8), ylim = c(0,5), main = "Shuttle run test AFTER training", xlab = "Shuttle run time (sec)")
+```
+Based on the histograms made for the shuttle run tests before and after training, it is evident that the shuttle run times decreased after the training program. This will be further investigated using a paired sample t-test below.
+
+
+Prior to performing a paired sample t-test, the before and after training data for the sit-up tests must be tested for normality. This is done in the following chunk.
+```{r}
+#Testing the normality of sit-up test using the Shapiro-Wilk normality test
+d_situps <- my_data$situps_beforetraining - my_data$situps_aftertraining
+d_situps
+
+shapiro.test(d_situps)
+```
+
+From the above output, the p-value is greater than the significance level 0.05 implying that the distribution of the differences (d) are not significantly different from normal distribution. In other words, we can assume the normality. Therefore, we may proceed with a paired sample t-test.
+```{r}
+#Calculating the p-value of sit-up test using a paired sample t-test
+situps_result <- t.test(my_data$situps_beforetraining, my_data$situps_aftertraining, paired = TRUE)
+
+situps_result
+```
+From the above output, we can see that the p-value is 0.1173, and since this p-value is not less than 0.05, we can not conclude that these results are statistically significant. More specifically, an active cycle of breathing in combination with aerobic exercise does not lead to an improvement of muscle endurance in pediatric patients with cystic fibrosis. Now the paired sample t-test will be done for the shuttle run data points.
+
+Prior to performing a paired sample t-test, the before and after training data for the shuttle run must be tested for normality. This is done in the following chunk.
+```{r}
+#Testing the normality of shuttle run test using the Shapiro-Wilk normality test
+d_shuttle <- my_data$situps_beforetraining - my_data$situps_aftertraining
+d_shuttle
+
+shapiro.test(d_shuttle)
+```
+From the above output, the p-value is greater than the significance level 0.05 implying that the distribution of the differences (d) are not significantly different from normal distribution. In other words, we can assume the normality. Therefore, we may proceed with a paired sample t-test.
+```{r}
+#Calculating the p-value of shuttle run test using a paired sample t-test
+shuttle_result <- t.test(my_data$shuttlerun_beforetraining, my_data$shuttlerun_aftertraining, paired = TRUE)
+
+shuttle_result
+```
+From the above output, we can see that the p-value is 0.0159, and since this p-value is less than 0.05, we can conclude that these results are statistically significant. More specifically, an active cycle of breathing in combination with aerobic exercise does lead to an improvement of speed in pediatric patients with cystic fibrosis.
+
+
+
+The two following chunks will now formulate a Deep Neural Network in order to determine any possible patterns between the ages, heights, weights, vital capacities, FEV1s, and post-training shuttle run times in pediatric patients with cystic fibrosis. 
+```{r}
+#A DNN will be utilized to identify any patterns between the characteristics of the 20 CF patients and their shuttle run times
+
+#Check the structure of data to ensure it is compiled as a data frame
+str(my_data)
+
+#Load neuralnet package 
+library(neuralnet)
+
+#Create DNN using age, height, weight, vital capacity, and forced expiratory volume
+nn <- neuralnet(SR_time ~ age_years + length_cm + weight_kg + vital_capacity + forced_expiratory_volume, my_data, linear.output = FALSE)
+nn
+
+#Plot variable nn
+plot(nn)
+```
+As per the plotted DNN, the shown error is fairly high at 3.32. As a result, these characteristics may not be too accurate at predicting post-training shuttle times in cystic fibrosis patients between the ages of 5 to 13. If this data analysis were to be done again, I would utilize a significantly larger sample size, as 20 patients is not large enough. Moreover, I would also try to collect more pulmonary characteristics from the patients, such as residual volumes, in order to more specifically predict post-training shuttle run times. With a larger sample size and more variables, the error would hopefully decrease and shuttle run times would be more accurately predicted.
+
+Now that the neural network has been plotted, the data will now be trained to predict shuttle run times given the ages, heights, weights, vital capacities, and FEV1s of pediatric cystic fibrosis patients.
+```{r}
+#Using 2/3 of the collected data in my_data, train the neural network in order to predict approximate shuttle run times (SR_time)
+train_idx <- sample(nrow(my_data), 2/3 * nrow(my_data))
+sr_train <- my_data[train_idx, ]
+sr_test <- my_data[-train_idx, ]
+
+#Now use the trained data to predict approximate shuttle run times. 
+nn <- neuralnet((SR_time == "2 to 3") + (SR_time == "4 to 5") + (SR_time == "5 to 6") + (SR_time == "6 to 7")
+                 ~ age_years + length_cm + weight_kg + vital_capacity + forced_expiratory_volume, sr_train, linear.output = FALSE)
+pred <- predict(nn, sr_test)
+pred
+
+#Display predictions in a table
+table(sr_test$SR_time, apply(pred, 1, which.max))
+
+```
+
+
+Analysis of results: Based on the histograms for both sit-up and shuttle run tests, there appears to be a correlation between the active cycle of breathing and exercise training. Although, based on the paired sample t-tests conducted for both tests, it appears that only shuttle run test results are statistically significant. Therefore, it cannot be concluded that an active cycle of breathing techniques and aerobic exercise training in pediatric patients with CF leads to an improvement in muscle endurance. Although, it can be concluded that the combination of these techniques can lead to an improvement in speed in patients with cystic fibrosis from ages 5-13. Moreover, after creating a Deep Neural Network containing the ages, heights, weights, VCs and FEV1s of the 20 pediatric patients, an error of 3.32 was produced, indicating that post-training shuttle run times cannot be accurately predicted. In future experiments, a larger sample size and more variables collected may decrease that error. 
